@@ -25,6 +25,12 @@ export default function DashboardLayout({
           >
             + Crear workspace
           </Link>
+          <Link
+            href="/dashboard/invitations"
+            className="rounded-md px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 transition-colors"
+          >
+            Invitaciones
+          </Link>
         </nav>
         <div className="mt-auto flex items-center gap-3">
           <UserButton />

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import TaskCard from "@/components/TaskCard";
+import MembersSection from "@/components/MemberSection"
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -41,6 +42,7 @@ export default async function WorkspacePage({ params }: Props) {
   }
 
   const isMember = workspace.members.some((m) => m.userId === user.id);
+  const isAdmin = workspace.members.some((m) => m.userId === user.id && m.role === "admin");
 
   if (!isMember) {
     redirect("/dashboard");
@@ -49,9 +51,11 @@ export default async function WorkspacePage({ params }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold text-zinc-900">{workspace.name}</h1>
-      <p className="text-sm text-zinc-500">
-        {workspace.members.length} miembro(s)
-      </p>
+      <MembersSection
+        members={workspace.members}
+        isAdmin={isAdmin}
+        workspaceId={id}
+      />
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-medium text-zinc-900">Tareas</h2>

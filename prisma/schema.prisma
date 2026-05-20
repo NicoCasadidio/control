@@ -17,6 +17,8 @@ model User {
   workspaces WorkspaceMember[]
   createdTasks   Task[] @relation("TaskCreator")
   assignedTasks  Task[] @relation("TaskAssignee")
+  sentInvitations     WorkspaceInvitation[] @relation("SentInvitations")
+  receivedInvitations WorkspaceInvitation[] @relation("ReceivedInvitations")
   comments   Comment[]
 }
 
@@ -25,6 +27,7 @@ model Workspace {
   name      String
   createdAt DateTime @default(now())
 
+  invitations WorkspaceInvitation[]
   members WorkspaceMember[]
   tasks   Task[]
 }
@@ -39,6 +42,7 @@ model WorkspaceMember {
 
   user      User      @relation(fields: [userId], references: [id])
   workspace Workspace @relation(fields: [workspaceId], references: [id])
+  @@unique([userId, workspaceId])
 }
 
 model Task {
@@ -68,4 +72,25 @@ model Comment {
 
   task Task @relation(fields: [taskId], references: [id])
   user User @relation(fields: [userId], references: [id])
+}
+
+enum InvitationStatus {
+  pending
+  accepted
+  rejected
+}
+
+model WorkspaceInvitation {
+  id          String           @id @default(cuid())
+  workspaceId String
+  senderId    String
+  receiverId  String
+  status      InvitationStatus @default(pending)
+  createdAt   DateTime         @default(now())
+
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id])
+  sender      User             @relation("SentInvitations", fields: [senderId], references: [id])
+  receiver    User             @relation("ReceivedInvitations", fields: [receiverId], references: [id])
+
+  @@unique([workspaceId, receiverId])
 }
