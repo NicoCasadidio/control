@@ -67,7 +67,7 @@ export default async function WorkspacePage({ params }: Props) {
         ) : (
           <div className="flex flex-col gap-2">
           {workspace.tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCard key={task.id} task={task} workspaceId={id} />
           ))}
           </div>
         )}
