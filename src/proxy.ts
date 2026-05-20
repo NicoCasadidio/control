@@ -8,6 +8,10 @@ export default clerkMiddleware(async (auth, request) => {
   if (userId && isGoingToRoot) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
+
+  if (!userId && request.nextUrl.pathname.startsWith('/dashboard')){
+    return NextResponse.redirect(new URL('/', request.url));
+  }
 });
 
 export const config = {
