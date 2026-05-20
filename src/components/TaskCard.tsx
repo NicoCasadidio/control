@@ -9,6 +9,11 @@ interface Task {
   title: string;
   description: string | null;
   status: string;
+  assignee: {
+    id: string;
+    name: string | null;
+    email: string;
+  } | null;
 }
 
 const statusLabels: Record<string, string> = {
@@ -36,6 +41,11 @@ export default function TaskCard({ task, workspaceId }: Props) {
         <p className="font-medium text-zinc-900">{task.title}</p>
         {task.description && (
           <p className="text-sm text-zinc-500">{task.description}</p>
+        )}
+        {task.assignee && (
+          <p className="text-xs text-zinc-400">
+            Asignado a: {task.assignee.name || task.assignee.email}
+          </p>
         )}
       </Link>
       <select

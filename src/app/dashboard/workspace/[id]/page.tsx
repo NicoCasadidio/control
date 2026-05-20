@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import TaskCard from "@/components/TaskCard";
 import MembersSection from "@/components/MemberSection"
+import CreateTaskModal from "@/components/CreateTaskModal";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -33,6 +34,9 @@ export default async function WorkspacePage({ params }: Props) {
         orderBy: {
           createdAt: "asc",
         },
+        include: {
+          assignee: true,
+        },
       },
     },
   });
@@ -59,12 +63,10 @@ export default async function WorkspacePage({ params }: Props) {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-medium text-zinc-900">Tareas</h2>
-          <Link
-            href={`/dashboard/workspace/${id}/task/new`}
-            className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
-          >
-            + Nueva tarea
-          </Link>
+          <CreateTaskModal
+            workspaceId={id}
+            members={workspace.members}
+          />
         </div>
         {workspace.tasks.length === 0 ? (
           <p className="text-sm text-zinc-500">Todavía no hay tareas en este workspace.</p>

@@ -78,13 +78,13 @@ export default function MembersSection({ members, isAdmin, workspaceId }: Props)
                 <button
                   type="button"
                   onClick={() => { setModalOpen(false); setError(null); setSuccess(false); }}
-                  className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900"
+                  className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
+                  className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors cursor-pointer"
                 >
                   Enviar
                 </button>

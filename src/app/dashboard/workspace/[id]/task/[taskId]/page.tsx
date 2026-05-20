@@ -25,6 +25,7 @@ export default async function TaskPage({ params }: Props) {
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     include: {
+      assignee: true,
       comments: {
         orderBy: { createdAt: "asc" },
         include: { user: true },
@@ -37,12 +38,14 @@ export default async function TaskPage({ params }: Props) {
   return (
     <div>
       <Link href={`/dashboard/workspace/${workspaceId}`} className="text-sm text-zinc-500 hover:underline">
-        ← Volver al workspace
+        Volver al workspace
       </Link>
       <h1>{task.title}</h1>
       {task.description && <p>{task.description}</p>}
       <p>Estado: {task.status}</p>
-
+      {task.assignee && (
+      <p>Asignado a: {task.assignee.name || task.assignee.email}</p>
+      )}
       <CommentSection
         comments={task.comments}
         taskId={task.id}

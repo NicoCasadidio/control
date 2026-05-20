@@ -37,7 +37,11 @@ export default function CommentSection({ comments, taskId, workspaceId, currentU
             <span>{comment.content}</span>
             <span>{new Date(comment.createdAt).toLocaleString()}</span>
             {comment.user.id === currentUserId && (
-              <button onClick={() => deleteComment(comment.id, taskId, workspaceId)}>
+              <button className="cursor-pointer" onClick={() => {
+                if (confirm("¿Quieres borrar este comentario?")) {
+                  deleteComment(comment.id, taskId, workspaceId);
+                }
+              }}>
                 Borrar
               </button>
             )}
@@ -47,7 +51,7 @@ export default function CommentSection({ comments, taskId, workspaceId, currentU
 
       <form ref={formRef} action={handleSubmit}>
         <textarea name="content" placeholder="Escribí un comentario..." required />
-        <button type="submit">Comentar</button>
+        <button type="submit" className="cursor-pointer">Comentar</button>
       </form>
     </div>
   );
