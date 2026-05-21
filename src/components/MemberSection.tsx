@@ -2,11 +2,13 @@
 
 import { useState, useRef } from "react";
 import { sendInvitation } from "@/actions/invitation";
+import RemoveMemberModal from "@/components/RemoveMemberModal";
 
 type Member = {
   id: string;
+  userId: string;
   role: string;
-  user: { name: string | null; email: string };
+  user: { id: string; name: string | null; email: string };
 };
 
 type Props = {
@@ -41,12 +43,15 @@ export default function MembersSection({ members, isAdmin, workspaceId }: Props)
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-medium text-zinc-900">Miembros</h2>
         {isAdmin && (
-          <button
-            onClick={() => setModalOpen(true)}
-            className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors cursor-pointer"
-          >
-            + Invitar
-          </button>
+          <div className="flex gap-2">
+            <RemoveMemberModal workspaceId={workspaceId} members={members} />
+            <button
+              onClick={() => setModalOpen(true)}
+              className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors cursor-pointer"
+            >
+              Invitar
+            </button>
+          </div>
         )}
       </div>
 

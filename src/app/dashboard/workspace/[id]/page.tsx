@@ -7,6 +7,7 @@ import MembersSection from "@/components/MemberSection"
 import CreateTaskModal from "@/components/CreateTaskModal";
 import WorkspaceNameEditor from "@/components/WorkspaceNameEditor";
 import DeleteWorkspaceButton from "@/components/DeleteWorkspaceButton";
+import LeaveWorkspaceButton from "@/components/LeaveWorkspaceButton";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -84,11 +85,13 @@ export default async function WorkspacePage({ params }: Props) {
           </div>
         )}
       </div>
-        {isAdmin && (
-          <div className="pt-4 border-t border-zinc-200">
-            <DeleteWorkspaceButton workspaceId={id} />
-          </div>
+      <div className="pt-4 border-t border-zinc-200">
+        {isAdmin ? (
+          <DeleteWorkspaceButton workspaceId={id} />
+        ) : (
+          <LeaveWorkspaceButton workspaceId={id} userId={user.id} />
         )}
+      </div>
     </div>
   );
 }
