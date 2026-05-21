@@ -23,7 +23,7 @@ export default function DashboardLayout({
             href="/dashboard/workspace/new"
             className="rounded-md px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 transition-colors"
           >
-            + Crear workspace
+            Crear workspace
           </Link>
           <Link
             href="/dashboard/invitations"

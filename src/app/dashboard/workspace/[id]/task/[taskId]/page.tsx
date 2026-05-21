@@ -5,6 +5,7 @@ import Link from "next/link";
 import CommentSection from "@/components/CommentSection";
 import DeleteTaskButton from "@/components/DeleteTaskButton";
 import EditTaskModal from "@/components/EditTaskModal";
+import PriorityBadge from "@/components/PriorityBadge";
 
 type Props = {
   params: Promise<{ id: string; taskId: string }>;
@@ -55,9 +56,12 @@ export default async function TaskPage({ params }: Props) {
       {task.assignee && (
         <p>Asignado a: {task.assignee.name || task.assignee.email}</p>
       )}
-      {task.dueDate && (
-        <p>Fecha límite: {new Date(task.dueDate).toLocaleDateString("es-AR")}</p>
-      )}
+      <div className="flex items-center gap-2">
+        {task.dueDate && (
+          <p>Fecha límite: {new Date(task.dueDate).toLocaleDateString("es-AR")}</p>
+        )}
+        <PriorityBadge dueDate={task.dueDate} />
+      </div>
       <CommentSection
         comments={task.comments}
         taskId={task.id}

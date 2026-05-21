@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { updateTaskStatus } from "@/actions/task";
+import PriorityBadge from "@/components/PriorityBadge";
 
 interface Task {
   id: string;
@@ -49,11 +50,14 @@ export default function TaskCard({ task, workspaceId }: Props) {
           </p>
         )}
       </Link>
-      {task.dueDate && (
+      <div className="flex items-center gap-2">
+        {task.dueDate && (
           <p className="text-xs text-zinc-400">
             Fecha límite: {new Date(task.dueDate).toLocaleDateString("es-AR")}
           </p>
         )}
+        <PriorityBadge dueDate={task.dueDate} />
+      </div>
       <select
         value={status}
         onChange={(e) => handleStatusChange(e.target.value)}

@@ -34,7 +34,7 @@ export default async function WorkspacePage({ params }: Props) {
       },
       tasks: {
         orderBy: {
-          createdAt: "asc",
+          dueDate: { sort: "asc", nulls: "last" },
         },
         include: {
           assignee: true,
