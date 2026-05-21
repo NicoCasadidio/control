@@ -51,6 +51,7 @@ model Task {
   description String?
   status      String   @default("todo")
   createdAt   DateTime @default(now())
+  dueDate     DateTime?
 
   workspaceId String
   creatorId   String
@@ -70,7 +71,7 @@ model Comment {
   taskId String
   userId String
 
-  task Task @relation(fields: [taskId], references: [id])
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id])
 }
 

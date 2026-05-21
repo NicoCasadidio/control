@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import CommentSection from "@/components/CommentSection";
+import DeleteTaskButton from "@/components/DeleteTaskButton";
+import EditTaskModal from "@/components/EditTaskModal";
 
 type Props = {
   params: Promise<{ id: string; taskId: string }>;
@@ -22,6 +24,8 @@ export default async function TaskPage({ params }: Props) {
   });
   if (!member) redirect("/dashboard");
 
+  const isAdmin = member.role === "admin";
+
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     include: {
@@ -35,6 +39,11 @@ export default async function TaskPage({ params }: Props) {
 
   if (!task) redirect("/dashboard");
 
+  const members = await prisma.workspaceMember.findMany({
+    where: { workspaceId },
+    include: { user: true },
+  });
+
   return (
     <div>
       <Link href={`/dashboard/workspace/${workspaceId}`} className="text-sm text-zinc-500 hover:underline">
@@ -44,7 +53,10 @@ export default async function TaskPage({ params }: Props) {
       {task.description && <p>{task.description}</p>}
       <p>Estado: {task.status}</p>
       {task.assignee && (
-      <p>Asignado a: {task.assignee.name || task.assignee.email}</p>
+        <p>Asignado a: {task.assignee.name || task.assignee.email}</p>
+      )}
+      {task.dueDate && (
+        <p>Fecha límite: {new Date(task.dueDate).toLocaleDateString("es-AR")}</p>
       )}
       <CommentSection
         comments={task.comments}
@@ -52,6 +64,24 @@ export default async function TaskPage({ params }: Props) {
         workspaceId={workspaceId}
         currentUserId={user.id}
       />
+      {isAdmin && (
+        <div className="flex gap-2">
+          <EditTaskModal
+            taskId={task.id}
+            workspaceId={workspaceId}
+            title={task.title}
+            description={task.description}
+            assigneeId={task.assigneeId}
+            dueDate={task.dueDate}
+            members={members}
+          />
+          <DeleteTaskButton
+            taskId={task.id}
+            workspaceId={workspaceId}
+            isAdmin={isAdmin}
+          />
+        </div>
+      )}
     </div>
   );
 }

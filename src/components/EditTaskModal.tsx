@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { createTask } from "@/actions/task";
+import { useState } from "react";
+import { updateTask } from "@/actions/task";
 
 interface Member {
   userId: string;
@@ -13,29 +13,53 @@ interface Member {
 }
 
 interface Props {
+  taskId: string;
   workspaceId: string;
+  title: string;
+  description: string | null;
+  assigneeId: string | null;
+  dueDate: Date | null;
   members: Member[];
 }
 
-export default function CreateTaskModal({ workspaceId, members }: Props) {
+export default function EditTaskModal({
+  taskId,
+  workspaceId,
+  title,
+  description,
+  assigneeId,
+  dueDate,
+  members,
+}: Props) {
   const [open, setOpen] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
-  const createTaskWithId = createTask.bind(null, workspaceId);
+  const updateTaskWithIds = updateTask.bind(null, taskId, workspaceId);
+
+  const formattedDueDate = dueDate
+    ? new Date(dueDate).toISOString().split("T")[0]
+    : "";
+
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    await updateTaskWithIds(formData);
+    setOpen(false);
+    }
+
 
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors cursor-pointer"
+        className="rounded-md bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-200 transition-colors cursor-pointer"
       >
-        + Nueva tarea
+        Editar tarea
       </button>
 
       {open && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md flex flex-col gap-4 shadow-xl">
-            <h2 className="text-lg font-semibold text-zinc-900">Nueva tarea</h2>
-            <form ref={formRef} action={createTaskWithId} className="flex flex-col gap-4">
+            <h2 className="text-lg font-semibold text-zinc-900">Editar tarea</h2>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
                 <label htmlFor="title" className="text-sm font-medium text-zinc-700">
                   Título
@@ -45,7 +69,7 @@ export default function CreateTaskModal({ workspaceId, members }: Props) {
                   name="title"
                   type="text"
                   required
-                  placeholder="Nombre de la tarea"
+                  defaultValue={title}
                   className="rounded-md border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-zinc-400"
                 />
               </div>
@@ -57,7 +81,7 @@ export default function CreateTaskModal({ workspaceId, members }: Props) {
                   id="description"
                   name="description"
                   rows={3}
-                  placeholder="Descripción opcional"
+                  defaultValue={description ?? ""}
                   className="rounded-md border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-zinc-400 resize-none"
                 />
               </div>
@@ -68,6 +92,7 @@ export default function CreateTaskModal({ workspaceId, members }: Props) {
                 <select
                   id="assigneeId"
                   name="assigneeId"
+                  defaultValue={assigneeId ?? ""}
                   className="rounded-md border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-zinc-400 cursor-pointer"
                 >
                   <option value="">Sin asignar</option>
@@ -86,6 +111,7 @@ export default function CreateTaskModal({ workspaceId, members }: Props) {
                   id="dueDate"
                   name="dueDate"
                   type="date"
+                  defaultValue={formattedDueDate}
                   className="rounded-md border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-zinc-400"
                 />
               </div>
@@ -101,7 +127,7 @@ export default function CreateTaskModal({ workspaceId, members }: Props) {
                   type="submit"
                   className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors cursor-pointer"
                 >
-                  Crear
+                  Guardar
                 </button>
               </div>
             </form>

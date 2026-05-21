@@ -9,6 +9,7 @@ interface Task {
   title: string;
   description: string | null;
   status: string;
+  dueDate: Date | null;
   assignee: {
     id: string;
     name: string | null;
@@ -48,6 +49,11 @@ export default function TaskCard({ task, workspaceId }: Props) {
           </p>
         )}
       </Link>
+      {task.dueDate && (
+          <p className="text-xs text-zinc-400">
+            Fecha límite: {new Date(task.dueDate).toLocaleDateString("es-AR")}
+          </p>
+        )}
       <select
         value={status}
         onChange={(e) => handleStatusChange(e.target.value)}
