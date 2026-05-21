@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import { useState, useRef } from "react";
 import { createComment, deleteComment } from "@/actions/comment";
+import ConfirmModal from "@/components/ConfirmModal";
 
 type Comment = {
   id: string;
@@ -19,11 +20,18 @@ type Props = {
 
 export default function CommentSection({ comments, taskId, workspaceId, currentUserId }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
+  const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
   const action = createComment.bind(null, taskId, workspaceId);
 
   async function handleSubmit(formData: FormData) {
     await action(formData);
     formRef.current?.reset();
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteCommentId) return;
+    await deleteComment(deleteCommentId, taskId, workspaceId);
+    setDeleteCommentId(null);
   }
 
   return (
@@ -37,11 +45,10 @@ export default function CommentSection({ comments, taskId, workspaceId, currentU
             <span>{comment.content}</span>
             <span>{new Date(comment.createdAt).toLocaleString()}</span>
             {comment.user.id === currentUserId && (
-              <button className="cursor-pointer" onClick={() => {
-                if (confirm("¿Quieres borrar este comentario?")) {
-                  deleteComment(comment.id, taskId, workspaceId);
-                }
-              }}>
+              <button
+                className="cursor-pointer"
+                onClick={() => setDeleteCommentId(comment.id)}
+              >
                 Borrar
               </button>
             )}
@@ -53,6 +60,14 @@ export default function CommentSection({ comments, taskId, workspaceId, currentU
         <textarea name="content" placeholder="Escribí un comentario..." required />
         <button type="submit" className="cursor-pointer">Comentar</button>
       </form>
+
+      <ConfirmModal
+        open={deleteCommentId !== null}
+        onClose={() => setDeleteCommentId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Borrar comentario"
+        message="¿Seguro que querés borrar este comentario?"
+      />
     </div>
   );
 }

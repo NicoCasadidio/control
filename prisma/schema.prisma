@@ -41,7 +41,7 @@ model WorkspaceMember {
   workspaceId String
 
   user      User      @relation(fields: [userId], references: [id])
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   @@unique([userId, workspaceId])
 }
 
@@ -57,7 +57,7 @@ model Task {
   creatorId   String
   assigneeId  String?
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   creator   User      @relation("TaskCreator", fields: [creatorId], references: [id])
   assignee  User?     @relation("TaskAssignee", fields: [assigneeId], references: [id])
   comments  Comment[]
@@ -89,7 +89,7 @@ model WorkspaceInvitation {
   status      InvitationStatus @default(pending)
   createdAt   DateTime         @default(now())
 
-  workspace   Workspace        @relation(fields: [workspaceId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   sender      User             @relation("SentInvitations", fields: [senderId], references: [id])
   receiver    User             @relation("ReceivedInvitations", fields: [receiverId], references: [id])
 

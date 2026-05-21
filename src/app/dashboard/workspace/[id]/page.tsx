@@ -5,6 +5,8 @@ import Link from "next/link";
 import TaskCard from "@/components/TaskCard";
 import MembersSection from "@/components/MemberSection"
 import CreateTaskModal from "@/components/CreateTaskModal";
+import WorkspaceNameEditor from "@/components/WorkspaceNameEditor";
+import DeleteWorkspaceButton from "@/components/DeleteWorkspaceButton";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -54,7 +56,11 @@ export default async function WorkspacePage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold text-zinc-900">{workspace.name}</h1>
+      <WorkspaceNameEditor
+        workspaceId={id}
+        initialName={workspace.name}
+        isAdmin={isAdmin}
+      />
       <MembersSection
         members={workspace.members}
         isAdmin={isAdmin}
@@ -78,6 +84,11 @@ export default async function WorkspacePage({ params }: Props) {
           </div>
         )}
       </div>
+        {isAdmin && (
+          <div className="pt-4 border-t border-zinc-200">
+            <DeleteWorkspaceButton workspaceId={id} />
+          </div>
+        )}
     </div>
   );
 }
