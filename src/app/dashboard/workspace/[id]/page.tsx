@@ -56,41 +56,61 @@ export default async function WorkspacePage({ params }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <WorkspaceNameEditor
-        workspaceId={id}
-        initialName={workspace.name}
-        isAdmin={isAdmin}
-      />
-      <MembersSection
-        members={workspace.members}
-        isAdmin={isAdmin}
-        workspaceId={id}
-      />
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-zinc-900">Tareas</h2>
+    <div className="flex flex-col gap-8">
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <WorkspaceNameEditor
+              workspaceId={id}
+              initialName={workspace.name}
+              isAdmin={isAdmin}
+            />
+          </div>
           <CreateTaskModal
             workspaceId={id}
             members={workspace.members}
           />
         </div>
-        {workspace.tasks.length === 0 ? (
-          <p className="text-sm text-zinc-500">Todavía no hay tareas en este workspace.</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-          {workspace.tasks.map((task) => (
-            <TaskCard key={task.id} task={task} workspaceId={id} />
-          ))}
-          </div>
-        )}
       </div>
-      <div className="pt-4 border-t border-zinc-200">
-        {isAdmin ? (
-          <DeleteWorkspaceButton workspaceId={id} />
-        ) : (
-          <LeaveWorkspaceButton workspaceId={id} userId={user.id} />
-        )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          <div>
+            <h2 className="text-lg font-semibold text-white mb-4">Tareas</h2>
+            {workspace.tasks.length === 0 ? (
+              <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-12 text-center">
+                <p className="text-[#94a3b8] mb-4">No hay tareas todavía</p>
+                <p className="text-sm text-[#64748b]">Crea tu primera tarea para comenzar</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {workspace.tasks.map((task) => (
+                  <TaskCard key={task.id} task={task} workspaceId={id} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="lg:col-span-1 flex flex-col gap-6">
+          <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Miembros</h3>
+            <MembersSection
+              members={workspace.members}
+              isAdmin={isAdmin}
+              workspaceId={id}
+            />
+          </div>
+
+          <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Configuración</h3>
+            {isAdmin ? (
+              <DeleteWorkspaceButton workspaceId={id} />
+            ) : (
+              <LeaveWorkspaceButton workspaceId={id} userId={user.id} />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

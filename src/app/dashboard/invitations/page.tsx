@@ -20,8 +20,11 @@ export default async function InvitationsPage() {
   });
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-zinc-900">Invitaciones pendientes</h1>
+    <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="text-3xl font-bold text-white mb-2">Invitaciones pendientes</h1>
+        <p className="text-[#94a3b8]">Manage your pending workspace invitations</p>
+      </div>
       <InvitationList invitations={invitations} />
     </div>
   );

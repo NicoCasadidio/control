@@ -1,9 +1,9 @@
 import { getPriority } from "@/lib/priority";
 
 const config = {
-  high:   { label: "Alta",  className: "bg-red-100 text-red-700" },
-  medium: { label: "Media", className: "bg-yellow-100 text-yellow-700" },
-  low:    { label: "Baja",  className: "bg-green-100 text-green-700" },
+  high:   { label: "Alta",  className: "bg-red-900 text-red-200" },
+  medium: { label: "Media", className: "bg-amber-900 text-amber-200" },
+  low:    { label: "Baja",  className: "bg-emerald-900 text-emerald-200" },
 };
 
 interface Props {

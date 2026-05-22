@@ -46,30 +46,57 @@ export default async function TaskPage({ params }: Props) {
   });
 
   return (
-    <div>
-      <Link href={`/dashboard/workspace/${workspaceId}`} className="text-sm text-zinc-500 hover:underline">
-        Volver al workspace
+    <div className="flex flex-col gap-8 max-w-4xl">
+      <Link href={`/dashboard/workspace/${workspaceId}`} className="text-sm text-[#0047ab] hover:text-[#0037a3] transition-colors">
+        ← Volver al workspace
       </Link>
-      <h1>{task.title}</h1>
-      {task.description && <p>{task.description}</p>}
-      <p>Estado: {task.status}</p>
-      {task.assignee && (
-        <p>Asignado a: {task.assignee.name || task.assignee.email}</p>
-      )}
-      <div className="flex items-center gap-2">
-        {task.dueDate && (
-          <p>Fecha límite: {new Date(task.dueDate).toLocaleDateString("es-AR")}</p>
-        )}
-        <PriorityBadge dueDate={task.dueDate} />
+
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-4xl font-bold text-white mb-4">{task.title}</h1>
+          {task.description && (
+            <p className="text-[#cbd5e1] mb-6 whitespace-pre-wrap">{task.description}</p>
+          )}
+        </div>
       </div>
-      <CommentSection
-        comments={task.comments}
-        taskId={task.id}
-        workspaceId={workspaceId}
-        currentUserId={user.id}
-      />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-4">
+          <p className="text-[#64748b] text-sm mb-2">Estado</p>
+          <p className="text-white font-semibold capitalize">{task.status === 'pending' ? 'Pendiente' : task.status === 'in_progress' ? 'En progreso' : 'Completado'}</p>
+        </div>
+
+        {task.assignee && (
+          <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-4">
+            <p className="text-[#64748b] text-sm mb-2">Asignado a</p>
+            <p className="text-white font-semibold">{task.assignee.name || task.assignee.email}</p>
+          </div>
+        )}
+
+        {task.dueDate && (
+          <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-4">
+            <p className="text-[#64748b] text-sm mb-2">Fecha límite</p>
+            <div className="flex items-center gap-2">
+              <p className="text-white font-semibold">
+                {new Date(task.dueDate).toLocaleDateString("es-AR")}
+              </p>
+              <PriorityBadge dueDate={task.dueDate} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="border-t border-[#1e293b] pt-8">
+        <CommentSection
+          comments={task.comments}
+          taskId={task.id}
+          workspaceId={workspaceId}
+          currentUserId={user.id}
+        />
+      </div>
+
       {isAdmin && (
-        <div className="flex gap-2">
+        <div className="flex gap-2 pt-4">
           <EditTaskModal
             taskId={task.id}
             workspaceId={workspaceId}
