@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import CreateWorkspaceCard from "@/components/CreateWorkspaceCard";
 
 export default async function DashboardPage() {
   const { userId: clerkId } = await auth();
@@ -22,17 +23,12 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Mis workspaces</h1>
-        <p className="text-[#94a3b8]">Manage all your project workspaces in one place</p>
+        <p className="text-[#94a3b8]">Controla todos tus workspaces en un solo lugar</p>
       </div>
       {workspaces.length === 0 ? (
         <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-12 text-center">
           <p className="text-[#94a3b8] mb-4">No workspaces yet</p>
-          <Link
-            href="/dashboard/workspace/new"
-            className="inline-block px-4 py-2 bg-[#0047ab] hover:bg-[#0037a3] text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
-          >
-            Create your first workspace
-          </Link>
+          <CreateWorkspaceCard showAsButton />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -55,6 +51,7 @@ export default async function DashboardPage() {
               </div>
             </Link>
           ))}
+          <CreateWorkspaceCard />
         </div>
       )}
     </div>

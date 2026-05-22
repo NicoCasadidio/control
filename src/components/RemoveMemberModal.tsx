@@ -36,7 +36,6 @@ export default function RemoveMemberModal({ workspaceId, members }: Props) {
         onClick={() => setOpen(true)}
         className="rounded-md bg-red-900/30 text-red-400 hover:bg-red-900/50 px-3 py-2 text-sm font-medium transition-colors cursor-pointer flex items-center gap-2"
       >
-        <Trash2 size={16} />
         Remover
       </button>
 

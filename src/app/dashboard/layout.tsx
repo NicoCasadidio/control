@@ -1,47 +1,95 @@
+"use client";
+
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  const isWorkspacesActive =
+    pathname === "/dashboard" || pathname.startsWith("/dashboard/workspace");
+  const isInvitationsActive = pathname === "/dashboard/invitations";
+
   return (
-    <div className="flex min-h-screen bg-[#020617]">
-      <aside className="w-64 border-r border-[#1e293b] bg-[#0f172a] px-6 py-8 flex flex-col gap-8 sticky top-0 h-screen">
-        <Link href="/dashboard" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-          <div className="w-8 h-8 bg-[#0047ab] rounded-lg flex items-center justify-center">
-            <span className="text-sm font-bold text-white">C</span>
-          </div>
-          <span className="text-lg font-bold tracking-tight text-white">
-            CONTROL
-          </span>
-        </Link>
-        <nav className="flex flex-col gap-1">
+    <div className="min-h-screen bg-[#020617]">
+      {/* Top Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#1e293b] bg-[#0f172a] h-16">
+        <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
+          {/* Left: App Name */}
           <Link
             href="/dashboard"
-            className="rounded-md px-3 py-2 text-sm text-[#cbd5e1] hover:bg-[#1e293b] hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+          >
+            <div className="w-8 h-8 bg-[#0047ab] rounded-lg flex items-center justify-center">
+              <span className="text-sm font-bold text-white">C</span>
+            </div>
+            <span className="text-lg font-bold tracking-tight text-white hidden sm:inline">
+              CONTROL
+            </span>
+          </Link>
+
+          {/* Center: Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1">
+            <Link
+              href="/dashboard"
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
+                isWorkspacesActive
+                  ? "text-[#0047ab] bg-[#0047ab]/10"
+                  : "text-[#cbd5e1] hover:text-white hover:bg-[#1e293b]"
+              }`}
+            >
+              Mis workspaces
+            </Link>
+            <Link
+              href="/dashboard/invitations"
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
+                isInvitationsActive
+                  ? "text-[#0047ab] bg-[#0047ab]/10"
+                  : "text-[#cbd5e1] hover:text-white hover:bg-[#1e293b]"
+              }`}
+            >
+              Invitaciones
+            </Link>
+          </nav>
+
+          {/* Right: User Button */}
+          <div className="flex items-center gap-3">
+            <UserButton />
+          </div>
+        </div>
+
+        {/* Mobile Navigation Menu */}
+        <div className="md:hidden absolute top-16 left-0 right-0 bg-[#0f172a] border-b border-[#1e293b] flex flex-col">
+          <Link
+            href="/dashboard"
+            className={`rounded-md mx-4 my-2 px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
+              isWorkspacesActive
+                ? "text-[#0047ab] bg-[#0047ab]/10"
+                : "text-[#cbd5e1] hover:text-white hover:bg-[#1e293b]"
+            }`}
           >
             Mis workspaces
           </Link>
           <Link
-            href="/dashboard/workspace/new"
-            className="rounded-md px-3 py-2 text-sm text-[#cbd5e1] hover:bg-[#1e293b] hover:text-white transition-colors cursor-pointer"
-          >
-            Crear workspace
-          </Link>
-          <Link
             href="/dashboard/invitations"
-            className="rounded-md px-3 py-2 text-sm text-[#cbd5e1] hover:bg-[#1e293b] hover:text-white transition-colors cursor-pointer"
+            className={`rounded-md mx-4 mb-4 px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
+              isInvitationsActive
+                ? "text-[#0047ab] bg-[#0047ab]/10"
+                : "text-[#cbd5e1] hover:text-white hover:bg-[#1e293b]"
+            }`}
           >
             Invitaciones
           </Link>
-        </nav>
-        <div className="mt-auto flex items-center gap-3">
-          <UserButton />
         </div>
-      </aside>
-      <main className="flex-1 overflow-auto">
+      </nav>
+
+      {/* Main Content */}
+      <main className="pt-16 overflow-auto">
         <div className="p-8 max-w-7xl mx-auto">
           {children}
         </div>
