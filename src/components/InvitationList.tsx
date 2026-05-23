@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { acceptInvitation, rejectInvitation } from "@/actions/invitation";
 import { Check, X } from "lucide-react";
 
@@ -15,6 +16,25 @@ type Props = {
 };
 
 export default function InvitationList({ invitations }: Props) {
+  const [isPending, startTransition] = useTransition();
+  const [pendingId, setPendingId] = useState<string | null>(null);
+
+  function handleAccept(id: string) {
+    setPendingId(id);
+    startTransition(async () => {
+      await acceptInvitation(id);
+      setPendingId(null);
+    });
+  }
+
+  function handleReject(id: string) {
+    setPendingId(id);
+    startTransition(async () => {
+      await rejectInvitation(id);
+      setPendingId(null);
+    });
+  }
+
   if (invitations.length === 0) {
     return (
       <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-12 text-center">
@@ -39,15 +59,17 @@ export default function InvitationList({ invitations }: Props) {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => acceptInvitation(inv.id)}
-                className="rounded-md bg-green-900/50 hover:bg-green-900 text-green-300 hover:text-green-200 p-2 transition-colors cursor-pointer"
+                onClick={() => handleAccept(inv.id)}
+                disabled={isPending}
+                className="rounded-md bg-green-900/50 hover:bg-green-900 text-green-300 hover:text-green-200 p-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
                 title="Aceptar"
               >
                 <Check size={18} />
               </button>
               <button
-                onClick={() => rejectInvitation(inv.id)}
-                className="rounded-md bg-red-900/50 hover:bg-red-900 text-red-300 hover:text-red-200 p-2 transition-colors cursor-pointer"
+                onClick={() => handleReject(inv.id)}
+                disabled={isPending}
+                className="rounded-md bg-red-900/50 hover:bg-red-900 text-red-300 hover:text-red-200 p-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
                 title="Rechazar"
               >
                 <X size={18} />

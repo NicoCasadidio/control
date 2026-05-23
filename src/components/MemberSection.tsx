@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useTransition } from "react";
 import { sendInvitation } from "@/actions/invitation";
 import RemoveMemberModal from "@/components/RemoveMemberModal";
 import { UserPlus } from "lucide-react";
@@ -22,21 +22,24 @@ export default function MembersSection({ members, isAdmin, workspaceId }: Props)
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
 
-  async function handleInvite(formData: FormData) {
+  function handleInvite(formData: FormData) {
     const email = formData.get("email") as string;
     setError(null);
     setSuccess(false);
 
-    const result = await sendInvitation(workspaceId, email);
+    startTransition(async () => {
+      const result = await sendInvitation(workspaceId, email);
 
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setSuccess(true);
-      formRef.current?.reset();
-    }
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSuccess(true);
+        formRef.current?.reset();
+      }
+    });
   }
 
   return (
@@ -77,7 +80,8 @@ export default function MembersSection({ members, isAdmin, workspaceId }: Props)
                 type="email"
                 placeholder="Email del usuario"
                 required
-                className="border border-[#1e293b] bg-[#1a2642] rounded-md px-3 py-2 text-sm text-white placeholder-[#64748b] focus:border-[#0047ab] outline-none transition-colors"
+                disabled={isPending}
+                className="border border-[#1e293b] bg-[#1a2642] rounded-md px-3 py-2 text-sm text-white placeholder-[#64748b] focus:border-[#0047ab] outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
               {error && <p className="text-sm text-red-500">{error}</p>}
               {success && <p className="text-sm text-green-500">Invitación enviada.</p>}
@@ -85,15 +89,17 @@ export default function MembersSection({ members, isAdmin, workspaceId }: Props)
                 <button
                   type="button"
                   onClick={() => { setModalOpen(false); setError(null); setSuccess(false); }}
-                  className="px-3 py-2 text-sm text-[#cbd5e1] hover:text-white cursor-pointer transition-colors"
+                  disabled={isPending}
+                  className="px-3 py-2 text-sm text-[#cbd5e1] hover:text-white cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-[#0047ab] hover:bg-[#0037a3] px-3 py-2 text-sm font-medium text-white transition-colors cursor-pointer"
+                  disabled={isPending}
+                  className="rounded-md bg-[#0047ab] hover:bg-[#0037a3] px-3 py-2 text-sm font-medium text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >
-                  Enviar
+                  {isPending ? "Enviando..." : "Enviar"}
                 </button>
               </div>
             </form>

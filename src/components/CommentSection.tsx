@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useTransition } from "react";
 import { createComment, deleteComment } from "@/actions/comment";
 import ConfirmModal from "@/components/ConfirmModal";
 import { Trash2 } from "lucide-react";
@@ -23,11 +23,14 @@ type Props = {
 export default function CommentSection({ comments, taskId, workspaceId, currentUserId, taskTitle }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
   const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const action = createComment.bind(null, taskId, workspaceId, taskTitle);
 
-  async function handleSubmit(formData: FormData) {
-    await action(formData);
-    formRef.current?.reset();
+  function handleSubmit(formData: FormData) {
+    startTransition(async () => {
+      await action(formData);
+      formRef.current?.reset();
+    });
   }
 
   async function handleDeleteConfirm() {
@@ -78,13 +81,15 @@ export default function CommentSection({ comments, taskId, workspaceId, currentU
             placeholder="Escribí un comentario..."
             required
             rows={3}
-            className="rounded-md border border-[#1e293b] bg-[#1a2642] px-3 py-2 text-sm text-white placeholder-[#64748b] outline-none focus:border-[#0047ab] transition-colors resize-none"
+            disabled={isPending}
+            className="rounded-md border border-[#1e293b] bg-[#1a2642] px-3 py-2 text-sm text-white placeholder-[#64748b] outline-none focus:border-[#0047ab] transition-colors resize-none disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <button
             type="submit"
-            className="self-end rounded-md bg-[#0047ab] hover:bg-[#0037a3] px-4 py-2 text-sm font-medium text-white transition-colors cursor-pointer"
+            disabled={isPending}
+            className="self-end rounded-md bg-[#0047ab] hover:bg-[#0037a3] px-4 py-2 text-sm font-medium text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
-            Comentar
+            {isPending ? "Comentando..." : "Comentar"}
           </button>
         </form>
       </div>

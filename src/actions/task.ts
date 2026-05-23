@@ -10,40 +10,50 @@ import { ActivityType } from "@/generated/prisma/client";
 export async function createTask(workspaceId: string, formData: FormData) {
   const { userId: clerkId } = await auth();
 
-  if (!clerkId) redirect("/sign-in");
+  if (!clerkId) {
+    return { error: "No autenticado" };
+  }
 
   const user = await prisma.user.findUnique({ where: { clerkId } });
 
-  if (!user) redirect("/sign-in");
+  if (!user) {
+    return { error: "Usuario no encontrado" };
+  }
 
   const title = formData.get("title") as string;
   const description = formData.get("description") as string | null;
   const assigneeId = formData.get("assigneeId") as string | null;
   const dueDate = formData.get("dueDate") as string | null;
 
+  if (!title || title.trim() === "") {
+    return { error: "El título es requerido" };
+  }
 
-  if (!title || title.trim() === "") return;
+  try {
+    await prisma.task.create({
+      data: {
+        title: title.trim(),
+        description: description?.trim() || null,
+        status: "pending",
+        workspaceId,
+        creatorId: user.id,
+        assigneeId: assigneeId || null,
+        dueDate: dueDate ? new Date(dueDate) : null,
+      },
+    });
 
-  await prisma.task.create({
-    data: {
-      title: title.trim(),
-      description: description?.trim() || null,
-      status: "pending",
+    await createActivity({
       workspaceId,
-      creatorId: user.id,
-      assigneeId: assigneeId || null,
-      dueDate: dueDate ? new Date(dueDate) : null,
-    },
-  });
+      actorId: user.id,
+      type: ActivityType.TASK_CREATED,
+      taskTitle: title.trim(),
+    });
 
-  await createActivity({
-    workspaceId,
-    actorId: user.id,
-    type: ActivityType.TASK_CREATED,
-    taskTitle: title.trim(),
-  });
-
-  redirect(`/dashboard/workspace/${workspaceId}`);
+    revalidatePath(`/dashboard/workspace/${workspaceId}`);
+    return { success: true };
+  } catch (error) {
+    return { error: "Error al crear la tarea" };
+  }
 }
 
 export async function updateTaskStatus(taskId: string, taskTitle: string, workspaceId: string, newStatus: string) {

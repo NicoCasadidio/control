@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { updateTask } from "@/actions/task";
 import { Edit2 } from "lucide-react";
 
@@ -33,18 +33,27 @@ export default function EditTaskModal({
   members,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const updateTaskWithIds = updateTask.bind(null, taskId, workspaceId);
 
   const formattedDueDate = dueDate
     ? new Date(dueDate).toISOString().split("T")[0]
     : "";
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    await updateTaskWithIds(formData);
-    setOpen(false);
-    }
+    setError(null);
+    startTransition(async () => {
+      try {
+        await updateTaskWithIds(formData);
+        setOpen(false);
+      } catch (err) {
+        setError("Error al guardar los cambios");
+      }
+    });
+  }
 
 
   return (
@@ -72,7 +81,8 @@ export default function EditTaskModal({
                   type="text"
                   required
                   defaultValue={title}
-                  className="rounded-md border border-[#1e293b] bg-[#1a2642] px-3 py-2 text-sm text-white placeholder-[#64748b] outline-none focus:border-[#0047ab] transition-colors"
+                  disabled={isPending}
+                  className="rounded-md border border-[#1e293b] bg-[#1a2642] px-3 py-2 text-sm text-white placeholder-[#64748b] outline-none focus:border-[#0047ab] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -84,7 +94,8 @@ export default function EditTaskModal({
                   name="description"
                   rows={3}
                   defaultValue={description ?? ""}
-                  className="rounded-md border border-[#1e293b] bg-[#1a2642] px-3 py-2 text-sm text-white placeholder-[#64748b] outline-none focus:border-[#0047ab] transition-colors resize-none"
+                  disabled={isPending}
+                  className="rounded-md border border-[#1e293b] bg-[#1a2642] px-3 py-2 text-sm text-white placeholder-[#64748b] outline-none focus:border-[#0047ab] transition-colors resize-none disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -95,7 +106,8 @@ export default function EditTaskModal({
                   id="assigneeId"
                   name="assigneeId"
                   defaultValue={assigneeId ?? ""}
-                  className="rounded-md border border-[#1e293b] bg-[#1a2642] px-3 py-2 text-sm text-white outline-none focus:border-[#0047ab] transition-colors cursor-pointer"
+                  disabled={isPending}
+                  className="rounded-md border border-[#1e293b] bg-[#1a2642] px-3 py-2 text-sm text-white outline-none focus:border-[#0047ab] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="">Sin asignar</option>
                   {members.map((m) => (
@@ -114,22 +126,26 @@ export default function EditTaskModal({
                   name="dueDate"
                   type="date"
                   defaultValue={formattedDueDate}
-                  className="rounded-md border border-[#1e293b] bg-[#1a2642] px-3 py-2 text-sm text-white outline-none focus:border-[#0047ab] transition-colors"
+                  disabled={isPending}
+                  className="rounded-md border border-[#1e293b] bg-[#1a2642] px-3 py-2 text-sm text-white outline-none focus:border-[#0047ab] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
+              {error && <p className="text-sm text-red-500">{error}</p>}
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-4 py-2 text-sm font-medium text-[#cbd5e1] hover:text-white hover:bg-[#1e293b] transition-colors cursor-pointer"
+                  disabled={isPending}
+                  className="rounded-md px-4 py-2 text-sm font-medium text-[#cbd5e1] hover:text-white hover:bg-[#1e293b] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-[#0047ab] hover:bg-[#0037a3] px-4 py-2 text-sm font-medium text-white transition-colors cursor-pointer"
+                  disabled={isPending}
+                  className="rounded-md bg-[#0047ab] hover:bg-[#0037a3] px-4 py-2 text-sm font-medium text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >
-                  Guardar
+                  {isPending ? "Guardando..." : "Guardar"}
                 </button>
               </div>
             </form>
