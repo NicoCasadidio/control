@@ -1,19 +1,38 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import MyTaskCard from "@/components/MyTaskCard";
+import MyTasksClient from "@/components/MyTasksClient";
 
-export default async function MyTasksPage() {
+interface Props {
+  searchParams: Promise<{
+    search?: string;
+    status?: string;
+    priority?: string;
+  }>;
+}
+
+export default async function MyTasksPage({ searchParams }: Props) {
   const { userId: clerkId } = await auth();
   if (!clerkId) redirect("/");
 
-  const user = await prisma.user.findUnique({
-    where: { clerkId },
-  });
+  const user = await prisma.user.findUnique({ where: { clerkId } });
   if (!user) redirect("/");
 
+  const params = await searchParams;
+  const searchQuery = params.search?.trim() ?? "";
+  const statusFilter = params.status?.split(",").filter(Boolean) ?? [];
+  const priorityFilter = params.priority?.split(",").filter(Boolean) ?? [];
+
   const tasks = await prisma.task.findMany({
-    where: { assigneeId: user.id },
+    where: {
+      assigneeId: user.id,
+      ...(searchQuery && {
+        title: { contains: searchQuery, mode: "insensitive" },
+      }),
+      ...(statusFilter.length > 0 && {
+        status: { in: statusFilter },
+      }),
+    },
     include: { workspace: true },
     orderBy: [{ dueDate: { sort: "asc", nulls: "last" } }],
   });
@@ -21,15 +40,11 @@ export default async function MyTasksPage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Mis tareas</h1>
-      {tasks.length === 0 ? (
-        <p className="text-muted-foreground">No tenés tareas asignadas.</p>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {tasks.map((task) => (
-            <MyTaskCard key={task.id} task={task} />
-          ))}
-        </div>
-      )}
+      <MyTasksClient
+        tasks={tasks}
+        priorityFilter={priorityFilter}
+        defaultSearch={searchQuery}
+      />
     </div>
   );
 }
