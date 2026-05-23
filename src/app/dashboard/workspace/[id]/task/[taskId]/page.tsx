@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import CommentSection from "@/components/CommentSection";
 import DeleteTaskButton from "@/components/DeleteTaskButton";
 import EditTaskModal from "@/components/EditTaskModal";
@@ -47,8 +48,8 @@ export default async function TaskPage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-8 max-w-4xl">
-      <Link href={`/dashboard/workspace/${workspaceId}`} className="text-sm text-[#0047ab] hover:text-[#0037a3] transition-colors">
-        ← Volver al workspace
+      <Link href={`/dashboard/workspace/${workspaceId}`} className="inline-flex items-center justify-center w-8 h-8 rounded-md text-[#94a3b8] hover:text-white hover:bg-[#1e293b] transition-colors cursor-pointer">
+        <ChevronLeft className="w-5 h-5" />
       </Link>
 
       <div className="flex items-start justify-between gap-4">
@@ -58,6 +59,24 @@ export default async function TaskPage({ params }: Props) {
             <p className="text-[#cbd5e1] mb-6 whitespace-pre-wrap">{task.description}</p>
           )}
         </div>
+        {isAdmin && (
+          <div className="flex gap-2 shrink-0">
+            <EditTaskModal
+              taskId={task.id}
+              workspaceId={workspaceId}
+              title={task.title}
+              description={task.description}
+              assigneeId={task.assigneeId}
+              dueDate={task.dueDate}
+              members={members}
+            />
+            <DeleteTaskButton
+              taskId={task.id}
+              workspaceId={workspaceId}
+              isAdmin={isAdmin}
+            />
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -96,24 +115,6 @@ export default async function TaskPage({ params }: Props) {
         />
       </div>
 
-      {isAdmin && (
-        <div className="flex gap-2 pt-4">
-          <EditTaskModal
-            taskId={task.id}
-            workspaceId={workspaceId}
-            title={task.title}
-            description={task.description}
-            assigneeId={task.assigneeId}
-            dueDate={task.dueDate}
-            members={members}
-          />
-          <DeleteTaskButton
-            taskId={task.id}
-            workspaceId={workspaceId}
-            isAdmin={isAdmin}
-          />
-        </div>
-      )}
     </div>
   );
 }
