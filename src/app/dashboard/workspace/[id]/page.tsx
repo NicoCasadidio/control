@@ -8,6 +8,7 @@ import CreateTaskModal from "@/components/CreateTaskModal";
 import WorkspaceNameEditor from "@/components/WorkspaceNameEditor";
 import DeleteWorkspaceButton from "@/components/DeleteWorkspaceButton";
 import LeaveWorkspaceButton from "@/components/LeaveWorkspaceButton";
+import ActivityFeed from "@/components/ActivityFeed";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -55,6 +56,21 @@ export default async function WorkspacePage({ params }: Props) {
     redirect("/dashboard");
   }
 
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const activities = await prisma.activity.findMany({
+    where: {
+      workspaceId: workspace.id,
+      createdAt: { gte: sevenDaysAgo },
+    },
+    include: {
+      actor: { select: { name: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -99,6 +115,13 @@ export default async function WorkspacePage({ params }: Props) {
               members={workspace.members}
               isAdmin={isAdmin}
               workspaceId={id}
+            />
+          </div>
+
+          <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Actividades recientes</h3>
+            <ActivityFeed
+              activities={activities}
             />
           </div>
 

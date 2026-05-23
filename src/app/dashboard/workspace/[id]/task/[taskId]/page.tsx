@@ -92,6 +92,7 @@ export default async function TaskPage({ params }: Props) {
           taskId={task.id}
           workspaceId={workspaceId}
           currentUserId={user.id}
+          taskTitle={task.title}
         />
       </div>
 

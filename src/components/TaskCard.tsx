@@ -40,7 +40,7 @@ export default function TaskCard({ task, workspaceId }: Props) {
 
   async function handleStatusChange(newStatus: string) {
     setStatus(newStatus);
-    await updateTaskStatus(task.id, newStatus);
+    await updateTaskStatus(task.id, task.title, workspaceId, newStatus, );
   }
 
   return (

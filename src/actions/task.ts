@@ -4,6 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from 'next/cache';
+import { createActivity } from "@/lib/activity";
+import { ActivityType } from "@/generated/prisma/client";
 
 export async function createTask(workspaceId: string, formData: FormData) {
   const { userId: clerkId } = await auth();
@@ -34,19 +36,36 @@ export async function createTask(workspaceId: string, formData: FormData) {
     },
   });
 
+  await createActivity({
+    workspaceId,
+    actorId: user.id,
+    type: ActivityType.TASK_CREATED,
+    taskTitle: title.trim(),
+  });
+
   redirect(`/dashboard/workspace/${workspaceId}`);
 }
 
-export async function updateTaskStatus(taskId: string, newStatus: string) {
+export async function updateTaskStatus(taskId: string, taskTitle: string, workspaceId: string, newStatus: string) {
   const { userId: clerkId } = await auth();
 
-  if (!clerkId) {
-    redirect("/sign-in");
-  }
+  if (!clerkId) redirect("/sign-in");
+
+  const user = await prisma.user.findUnique({ where: { clerkId } });
+
+  if (!user) redirect("/sign-in");
 
   await prisma.task.update({
     where: { id: taskId },
     data: { status: newStatus },
+  });
+
+  await createActivity({
+    workspaceId,
+    actorId: user.id,
+    type: ActivityType.TASK_STATUS_CHANGED,
+    taskId,
+    taskTitle,
   });
 }
 

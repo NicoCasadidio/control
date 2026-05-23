@@ -17,12 +17,13 @@ type Props = {
   taskId: string;
   workspaceId: string;
   currentUserId: string;
+  taskTitle: string;
 };
 
-export default function CommentSection({ comments, taskId, workspaceId, currentUserId }: Props) {
+export default function CommentSection({ comments, taskId, workspaceId, currentUserId, taskTitle }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
   const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
-  const action = createComment.bind(null, taskId, workspaceId);
+  const action = createComment.bind(null, taskId, workspaceId, taskTitle);
 
   async function handleSubmit(formData: FormData) {
     await action(formData);

@@ -3,6 +3,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { createActivity } from "@/lib/activity";
+import { ActivityType } from "@/generated/prisma/client";
 
 export async function sendInvitation(workspaceId: string, email: string) {
   const { userId: clerkId } = await auth();
@@ -71,6 +73,12 @@ export async function acceptInvitation(invitationId: string) {
     }),
   ]);
 
+  await createActivity({
+    workspaceId: invitation.workspaceId,
+    actorId: user.id,
+    type: ActivityType.MEMBER_JOINED,
+  });
+  
   revalidatePath("/dashboard");
   return { success: true };
 }

@@ -3,8 +3,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { createActivity } from "@/lib/activity";
+import { ActivityType } from "@/generated/prisma/client";
 
-export async function createComment(taskId: string, workspaceId: string, formData: FormData) {
+export async function createComment(taskId: string, workspaceId: string, taskTitle: string, formData: FormData) {
   const { userId: clerkId } = await auth();
   if (!clerkId) return;
 
@@ -20,6 +22,14 @@ export async function createComment(taskId: string, workspaceId: string, formDat
       taskId,
       userId: user.id,
     },
+  });
+
+  await createActivity({
+    workspaceId,
+    actorId: user.id,
+    type: ActivityType.COMMENT_ADDED,
+    taskId,
+    taskTitle,
   });
 
   revalidatePath(`/dashboard/workspace/${workspaceId}/task/${taskId}`);
