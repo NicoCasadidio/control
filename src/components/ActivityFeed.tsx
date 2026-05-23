@@ -85,23 +85,12 @@ function getActivityAction(activity: Activity): string {
 
 export default function ActivityFeed({ activities }: Props) {
   if (activities.length === 0) {
-    return (
-      <div className="bg-[#0f172a] border border-[#1e293b] rounded-lg p-6">
-        <h2 className="text-lg font-bold text-[#f8fafc] mb-4">
-          Actividad reciente
-        </h2>
-        <p className="text-[#94a3b8]">No hay actividad en los últimos 7 días.</p>
-      </div>
-    );
+    return <p className="text-[#94a3b8]">No hay actividad en los últimos 7 días.</p>;
   }
 
   return (
-    <div className="bg-[#0f172a] border border-[#1e293b] rounded-lg p-6">
-      <h2 className="text-lg font-bold text-[#f8fafc] mb-6">
-        Actividad reciente
-      </h2>
-      <ul className="space-y-4">
-        {activities.map((activity) => {
+    <ul className="space-y-4">
+      {activities.map((activity) => {
           const actor = activity.actor.name ?? "Alguien";
           const action = getActivityAction(activity);
           const colorClass = getActivityColor(activity.type);
@@ -133,6 +122,5 @@ export default function ActivityFeed({ activities }: Props) {
           );
         })}
       </ul>
-    </div>
   );
 }

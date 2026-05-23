@@ -89,7 +89,7 @@ export default async function WorkspacePage({ params }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-2 flex flex-col gap-6">
           <div>
             <h2 className="text-lg font-semibold text-white mb-4">Tareas</h2>
@@ -119,19 +119,21 @@ export default async function WorkspacePage({ params }: Props) {
           </div>
 
           <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Actividades recientes</h3>
-            <ActivityFeed
-              activities={activities}
-            />
-          </div>
-
-          <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Configuración</h3>
             {isAdmin ? (
               <DeleteWorkspaceButton workspaceId={id} />
             ) : (
               <LeaveWorkspaceButton workspaceId={id} userId={user.id} />
             )}
+          </div>
+        </div>
+
+        <div className="lg:col-span-1">
+          <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-6 flex flex-col h-[650px]">
+            <h3 className="text-lg font-semibold text-white mb-4 flex-shrink-0">Actividad reciente</h3>
+            <div className="overflow-y-auto flex-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#1e293b] [&::-webkit-scrollbar-thumb]:rounded-full">
+              <ActivityFeed activities={activities} />
+            </div>
           </div>
         </div>
       </div>

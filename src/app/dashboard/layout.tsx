@@ -17,6 +17,7 @@ export default function DashboardLayout({
     pathname === "/dashboard" || pathname.startsWith("/dashboard/workspace");
   const isInvitationsActive = pathname === "/dashboard/invitations";
   const isMyTasksActive = pathname === "/dashboard/my-tasks";
+  const isWorkspacePage = /^\/dashboard\/workspace\/[^/]+$/.test(pathname);
 
   return (
     <div className="min-h-screen bg-[#020617]">
@@ -132,7 +133,7 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <main className="pt-16 overflow-auto">
-        <div className="p-8 max-w-7xl mx-auto">
+        <div className={`p-8 ${isWorkspacePage ? "max-w-screen-2xl" : "max-w-7xl"} mx-auto`}>
           {children}
         </div>
       </main>
