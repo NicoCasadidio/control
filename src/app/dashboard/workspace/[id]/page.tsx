@@ -6,8 +6,7 @@ import TaskCard from "@/components/TaskCard";
 import MembersSection from "@/components/MemberSection"
 import CreateTaskModal from "@/components/CreateTaskModal";
 import WorkspaceNameEditor from "@/components/WorkspaceNameEditor";
-import DeleteWorkspaceButton from "@/components/DeleteWorkspaceButton";
-import LeaveWorkspaceButton from "@/components/LeaveWorkspaceButton";
+import WorkspaceOptionsMenu from "@/components/WorkspaceOptionsMenu";
 import ActivityFeed from "@/components/ActivityFeed";
 
 interface Props {
@@ -75,11 +74,16 @@ export default async function WorkspacePage({ params }: Props) {
     <div className="flex flex-col gap-8">
       <div>
         <div className="flex items-center justify-between mb-4">
-          <div>
+          <div className="flex items-center gap-1">
             <WorkspaceNameEditor
               workspaceId={id}
               initialName={workspace.name}
               isAdmin={isAdmin}
+            />
+            <WorkspaceOptionsMenu
+              workspaceId={id}
+              isAdmin={isAdmin}
+              userId={user.id}
             />
           </div>
           <CreateTaskModal
@@ -116,15 +120,6 @@ export default async function WorkspacePage({ params }: Props) {
               isAdmin={isAdmin}
               workspaceId={id}
             />
-          </div>
-
-          <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Configuración</h3>
-            {isAdmin ? (
-              <DeleteWorkspaceButton workspaceId={id} />
-            ) : (
-              <LeaveWorkspaceButton workspaceId={id} userId={user.id} />
-            )}
           </div>
         </div>
 

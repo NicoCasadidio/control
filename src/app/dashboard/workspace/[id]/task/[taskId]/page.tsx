@@ -86,7 +86,7 @@ export default async function TaskPage({ params }: Props) {
         )}
       </div>
 
-      <div className="border-t border-[#1e293b] pt-8">
+      <div className="border-t border-[#1e293b] pt-2">
         <CommentSection
           comments={task.comments}
           taskId={task.id}

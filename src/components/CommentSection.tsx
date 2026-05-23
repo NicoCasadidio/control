@@ -67,7 +67,7 @@ export default function CommentSection({ comments, taskId, workspaceId, currentU
         </ul>
       )}
 
-      <div className="border-t border-[#1e293b] pt-6">
+      <div className="border-t border-[#1e293b] pt-2">
         <form ref={formRef} action={handleSubmit} className="flex flex-col gap-3">
           <label htmlFor="content" className="text-sm font-medium text-[#cbd5e1]">
             Agregar comentario
@@ -77,7 +77,7 @@ export default function CommentSection({ comments, taskId, workspaceId, currentU
             name="content"
             placeholder="Escribí un comentario..."
             required
-            rows={4}
+            rows={3}
             className="rounded-md border border-[#1e293b] bg-[#1a2642] px-3 py-2 text-sm text-white placeholder-[#64748b] outline-none focus:border-[#0047ab] transition-colors resize-none"
           />
           <button
