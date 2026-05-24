@@ -34,7 +34,7 @@ export default function MyTasksClient({
 
   return (
     <>
-      <SearchAndFilterBar defaultSearch={defaultSearch} />
+      <SearchAndFilterBar />
       {filtered.length === 0 ? (
         <p className="text-[#94a3b8]">No hay tareas que coincidan con los filtros.</p>
       ) : (
