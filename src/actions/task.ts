@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from 'next/cache';
 import { createActivity } from "@/lib/activity";
 import { ActivityType } from "@/generated/prisma/client";
+import { sendTaskAssignmentEmail } from "@/lib/email";
 
 export async function createTask(workspaceId: string, formData: FormData) {
   const { userId: clerkId } = await auth();
@@ -30,7 +31,15 @@ export async function createTask(workspaceId: string, formData: FormData) {
   }
 
   try {
-    await prisma.task.create({
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+    });
+
+    if (!workspace) {
+      return { error: "Workspace no encontrado" };
+    }
+
+    const task = await prisma.task.create({
       data: {
         title: title.trim(),
         description: description?.trim() || null,
@@ -40,6 +49,7 @@ export async function createTask(workspaceId: string, formData: FormData) {
         assigneeId: assigneeId || null,
         dueDate: dueDate ? new Date(dueDate) : null,
       },
+      include: { assignee: true, creator: true },
     });
 
     await createActivity({
@@ -48,6 +58,18 @@ export async function createTask(workspaceId: string, formData: FormData) {
       type: ActivityType.TASK_CREATED,
       taskTitle: title.trim(),
     });
+    
+    // enviar mail si hay asignado
+    if (task.assigneeId && task.assignee) {
+      await sendTaskAssignmentEmail(
+        task.assignee.email!,
+        task.creator.name || task.creator.email!,
+        task.title,
+        workspace.name,
+        workspaceId,
+        task.id
+      );
+    }
 
     revalidatePath(`/dashboard/workspace/${workspaceId}`);
     return { success: true };
@@ -115,7 +137,21 @@ export async function updateTask(taskId: string, workspaceId: string, formData: 
   const assigneeId = formData.get("assigneeId") as string | null;
   const dueDate = formData.get("dueDate") as string | null;
 
-  await prisma.task.update({
+  // tarea anterior para comparar asignado
+  const oldTask = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: { assignee: true, creator: true },
+  });
+
+  if (!oldTask) throw new Error("Tarea no encontrada");
+
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+  });
+
+  if (!workspace) throw new Error("Workspace no encontrado");
+
+  const task = await prisma.task.update({
     where: { id: taskId },
     data: {
       title,
@@ -123,7 +159,25 @@ export async function updateTask(taskId: string, workspaceId: string, formData: 
       assigneeId: assigneeId || null,
       dueDate: dueDate ? new Date(dueDate) : null,
     },
+    include: { assignee: true, creator: true },
   });
 
+  // si el asignado cambia, se envia mail avisando
+  if (
+    task.assigneeId &&
+    task.assignee &&
+    oldTask.assigneeId !== task.assigneeId
+  ) {
+    sendTaskAssignmentEmail(
+      task.assignee.email!,
+      task.creator.name || task.creator.email!,
+      task.title,
+      workspace.name,
+      workspaceId,
+      task.id
+    );
+  }
+
   revalidatePath(`/dashboard/workspace/${workspaceId}/task/${taskId}`);
+  return { success: true };
 }

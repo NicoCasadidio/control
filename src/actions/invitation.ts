@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { createActivity } from "@/lib/activity";
 import { ActivityType } from "@/generated/prisma/client";
+import { sendWorkspaceInvitationEmail } from "@/lib/email";
 
 export async function sendInvitation(workspaceId: string, email: string) {
   const { userId: clerkId } = await auth();
@@ -38,9 +39,22 @@ export async function sendInvitation(workspaceId: string, email: string) {
   });
   if (existingInvitation) return { error: "Este usuario ya tiene una invitación pendiente" };
 
+  // obtener workspace para el nombre
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+  });
+  if (!workspace) return { error: "Workspace no encontrado" };
+
   await prisma.workspaceInvitation.create({
     data: { workspaceId, senderId: sender.id, receiverId: receiver.id },
   });
+
+  // enviar mail de invitación
+  sendWorkspaceInvitationEmail(
+    receiver.email!,
+    sender.name || sender.email!,
+    workspace.name
+  );
 
   revalidatePath(`/dashboard/workspace/${workspaceId}`);
   return { success: true };
@@ -100,9 +114,9 @@ export async function rejectInvitation(invitationId: string) {
     return { error: "Esta invitación ya fue procesada" };
   }
 
-await prisma.workspaceInvitation.delete({
-  where: { id: invitationId },
-});
+  await prisma.workspaceInvitation.delete({
+    where: { id: invitationId },
+  });
 
   revalidatePath("/dashboard");
   return { success: true };
