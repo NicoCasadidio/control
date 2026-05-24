@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, Search } from "lucide-react";
 
 const STATUS_OPTIONS = [
   { value: "pending", label: "Pendiente" },
@@ -17,19 +17,85 @@ const PRIORITY_OPTIONS = [
   { value: "none", label: "Sin prioridad" },
 ];
 
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface FilterDropdownProps {
+  label: string;
+  options: Option[];
+  selectedValues: string[];
+  onChange: (value: string, checked: boolean) => void;
+  align: "left" | "right";
+}
+
+function FilterDropdown({ label, options, selectedValues, onChange, align }: FilterDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  const count = selectedValues.length;
+  const buttonLabel = count > 0 ? `${label} (${count})` : label;
+  const menuPositionClass = align === "right" ? "right-0" : "left-0";
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="flex items-center gap-1.5 px-3 py-2 bg-[#1a2642] border border-[#1e293b] rounded-md text-sm text-[#cbd5e1] hover:border-[#0047ab] hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+      >
+        <span className={count > 0 ? "text-[#0047ab] font-medium" : ""}>{buttonLabel}</span>
+        <ChevronDown
+          className={"w-3.5 h-3.5 transition-transform duration-200 " + (isOpen ? "rotate-180" : "")}
+        />
+      </button>
+
+      {isOpen && (
+        <div
+          className={"absolute top-full mt-1 z-50 min-w-[160px] bg-[#0f172a] border border-[#1e293b] rounded-md shadow-lg py-1 " + menuPositionClass}
+        >
+          {options.map((opt) => (
+            <label
+              key={opt.value}
+              className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-[#1a2642] transition-colors"
+            >
+              <input
+                type="checkbox"
+                checked={selectedValues.includes(opt.value)}
+                onChange={(e) => onChange(opt.value, e.target.checked)}
+                className="w-4 h-4 accent-[#0047ab] cursor-pointer flex-shrink-0"
+              />
+              <span className="text-sm text-[#cbd5e1]">{opt.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SearchAndFilterBar() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // ← Leer SIEMPRE de searchParams, no guardar en state local
   const currentSearch = searchParams.get("search") || "";
   const currentStatuses = searchParams.get("status")?.split(",").filter(Boolean) ?? [];
   const currentPriorities = searchParams.get("priority")?.split(",").filter(Boolean) ?? [];
 
   const [search, setSearch] = useState(currentSearch);
 
-  // Debounce: cuando search cambia, espera 300ms antes de actualizar URL
   useEffect(() => {
     const timer = setTimeout(() => {
       if (search !== currentSearch) {
@@ -43,13 +109,12 @@ export default function SearchAndFilterBar() {
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [search]); // ← SOLO search, nada más
+  }, [search]);
 
   const handleStatusChange = (value: string, checked: boolean) => {
     const updated = checked
       ? [...currentStatuses, value]
       : currentStatuses.filter((s) => s !== value);
-    
     const params = new URLSearchParams(searchParams.toString());
     if (updated.length > 0) {
       params.set("status", updated.join(","));
@@ -63,7 +128,6 @@ export default function SearchAndFilterBar() {
     const updated = checked
       ? [...currentPriorities, value]
       : currentPriorities.filter((p) => p !== value);
-    
     const params = new URLSearchParams(searchParams.toString());
     if (updated.length > 0) {
       params.set("priority", updated.join(","));
@@ -74,8 +138,8 @@ export default function SearchAndFilterBar() {
   };
 
   return (
-    <div className="flex flex-col gap-4 mb-6 p-4 rounded-lg border border-[#1e293b] bg-[#0f172a]">
-      <div className="relative">
+    <div className="flex items-center gap-3 mb-6">
+      <div className="relative flex-1 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
         <input
           type="text"
@@ -86,44 +150,21 @@ export default function SearchAndFilterBar() {
         />
       </div>
 
-      <div className="flex flex-wrap gap-6">
-        <div>
-          <p className="text-xs font-medium text-[#94a3b8] mb-2 uppercase tracking-wide">
-            Estado
-          </p>
-          <div className="flex flex-wrap gap-4">
-            {STATUS_OPTIONS.map((opt) => (
-              <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={currentStatuses.includes(opt.value)}
-                  onChange={(e) => handleStatusChange(opt.value, e.target.checked)}
-                  className="w-4 h-4 accent-[#0047ab] cursor-pointer"
-                />
-                <span className="text-sm text-[#cbd5e1]">{opt.label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className="text-xs font-medium text-[#94a3b8] mb-2 uppercase tracking-wide">
-            Prioridad
-          </p>
-          <div className="flex flex-wrap gap-4">
-            {PRIORITY_OPTIONS.map((opt) => (
-              <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={currentPriorities.includes(opt.value)}
-                  onChange={(e) => handlePriorityChange(opt.value, e.target.checked)}
-                  className="w-4 h-4 accent-[#0047ab] cursor-pointer"
-                />
-                <span className="text-sm text-[#cbd5e1]">{opt.label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+      <div className="flex items-center gap-2 ml-auto">
+        <FilterDropdown
+          label="Estado"
+          options={STATUS_OPTIONS}
+          selectedValues={currentStatuses}
+          onChange={handleStatusChange}
+          align="left"
+        />
+        <FilterDropdown
+          label="Prioridad"
+          options={PRIORITY_OPTIONS}
+          selectedValues={currentPriorities}
+          onChange={handlePriorityChange}
+          align="right"
+        />
       </div>
     </div>
   );
