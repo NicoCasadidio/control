@@ -8,12 +8,15 @@ import CreateTaskModal from "@/components/CreateTaskModal";
 import WorkspaceNameEditor from "@/components/WorkspaceNameEditor";
 import WorkspaceOptionsMenu from "@/components/WorkspaceOptionsMenu";
 import ActivityFeed from "@/components/ActivityFeed";
+import SearchAndFilterBar from "@/components/SearchAndFilterBar";
+import { getPriority } from "@/lib/priority";
 
 interface Props {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ search?: string; status?: string; priority?: string }>;
 }
 
-export default async function WorkspacePage({ params }: Props) {
+export default async function WorkspacePage({ params, searchParams }: Props) {
   const { id } = await params;
   const { userId: clerkId } = await auth();
 
@@ -25,6 +28,11 @@ export default async function WorkspacePage({ params }: Props) {
     redirect("/sign-in");
   }
 
+  const { search: searchQuery = "", status: statusParam, priority: priorityParam } = await searchParams;
+  const searchTrimmed = searchQuery.trim();
+  const statusFilter = statusParam?.split(",").filter(Boolean) ?? [];
+  const priorityFilter = priorityParam?.split(",").filter(Boolean) ?? [];
+
   const workspace = await prisma.workspace.findUnique({
     where: { id },
     include: {
@@ -34,6 +42,14 @@ export default async function WorkspacePage({ params }: Props) {
         },
       },
       tasks: {
+        where: {
+          ...(searchTrimmed && {
+            title: { contains: searchTrimmed, mode: "insensitive" },
+          }),
+          ...(statusFilter.length > 0 && {
+            status: { in: statusFilter },
+          }),
+        },
         orderBy: {
           dueDate: { sort: "asc", nulls: "last" },
         },
@@ -54,6 +70,13 @@ export default async function WorkspacePage({ params }: Props) {
   if (!isMember) {
     redirect("/dashboard");
   }
+
+  const filteredTasks = priorityFilter.length > 0
+    ? workspace.tasks.filter((task) => {
+        const p = getPriority(task.dueDate) ?? "none";
+        return priorityFilter.includes(p);
+      })
+    : workspace.tasks;
 
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -97,14 +120,15 @@ export default async function WorkspacePage({ params }: Props) {
         <div className="lg:col-span-2 flex flex-col gap-6">
           <div>
             <h2 className="text-lg font-semibold text-white mb-4">Tareas</h2>
-            {workspace.tasks.length === 0 ? (
+            <SearchAndFilterBar />
+            {filteredTasks.length === 0 ? (
               <div className="rounded-lg border border-[#1e293b] bg-[#0f172a] p-12 text-center">
                 <p className="text-[#94a3b8] mb-4">No hay tareas todavía</p>
                 <p className="text-sm text-[#64748b]">Crea tu primera tarea para comenzar</p>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {workspace.tasks.map((task) => (
+                {filteredTasks.map((task) => (
                   <TaskCard key={task.id} task={task} workspaceId={id} />
                 ))}
               </div>
